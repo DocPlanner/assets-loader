@@ -1,0 +1,19 @@
+{
+    "name": "znanylekarz/assets-loader",
+    "description": "Assets Loader",
+    "authors": [
+        {
+            "name": "Maciej Łebkowski",
+            "email": "m.lebkowski@gmail.com"
+        }
+    ],
+    "require": {
+        "nervo/yuicompressor": "2.4.*"
+
+    },
+    "autoload": {
+        "psr-0": {
+            "ZL\\AssetsLoader": "src/"
+        }
+    }
+}
