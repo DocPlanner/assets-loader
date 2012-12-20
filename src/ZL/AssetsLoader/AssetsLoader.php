@@ -126,6 +126,7 @@ class AssetsLoader
 			$result[] = $file;
 
 		}
+		sort($result);
 		return $result;
 	}
 
