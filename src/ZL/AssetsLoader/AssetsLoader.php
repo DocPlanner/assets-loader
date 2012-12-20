@@ -123,7 +123,7 @@ class AssetsLoader
 			{
 				continue;
 			}
-			$result[] = $file;
+			$result[] = (string) $file;
 
 		}
 		sort($result);
