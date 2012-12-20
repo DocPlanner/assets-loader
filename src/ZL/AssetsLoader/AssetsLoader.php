@@ -85,7 +85,7 @@ class AssetsLoader
 			}
 
 			{
-				$this->assets->push(sprintf('/%s/%s?%s', $type, basename($targetPathNormal), crc32($source)), $type);
+				$this->assets->push(sprintf('/%s/%s?%s', $type, basename($targetPathNormal), substr(md5($source), 0, 10)), $type);
 			}
 		}
 	}
