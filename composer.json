@@ -8,7 +8,8 @@
         }
     ],
     "require": {
-        "nervo/yuicompressor": "2.4.*"
+        "nervo/yuicompressor": "2.4.*",
+        "leafo/lessphp": "0.3.8"
 
     },
     "autoload": {

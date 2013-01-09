@@ -2,3 +2,4 @@
 vendor
 examples/assets/css/*
 examples/assets/js/*
+examples/cache/*

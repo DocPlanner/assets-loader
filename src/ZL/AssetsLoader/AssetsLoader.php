@@ -9,7 +9,7 @@ use InvalidArgumentException, RuntimeException;
 use RecursiveDirectoryIterator, RecursiveIteratorIterator;
 
 /**
- * Assets Loader loads a pack of css/js files from one directory, mungles them, combines,
+ * Assets Loader loads a pack of css/js files from one directory, mangles them, combines,
  * makes his magic and outputs
  */
 class AssetsLoader
@@ -37,17 +37,30 @@ class AssetsLoader
 	protected $compressor;
 
 	/**
-	 * @param AssetsCompressor $compressor
-	 * @param string           $sourcePath
-	 * @param string           $targetPath
-	 * @param string           $staticHost
+	 * @var LessParser
 	 */
-	public function __construct(AssetsCompressor $compressor, $sourcePath, $targetPath, $staticHost = null)
+	protected $lessParser;
+
+	/**
+	 * @param string $sourcePath
+	 * @param string $targetPath
+	 * @param string $cachePath
+	 * @param string $staticHost
+	 */
+	public function __construct($sourcePath, $targetPath, $cachePath = null, $staticHost = null)
 	{
 		$this->sourcePath = realpath($sourcePath);
 		$this->targetPath = realpath($targetPath);
-		$this->compressor = $compressor;
 		$this->assets = new AssetsDefinition($staticHost);
+		if ($cachePath)
+		{
+			$this->lessParser = new LessParser($cachePath);
+		}
+	}
+
+	public function setCompressor(AssetsCompressor $compressor)
+	{
+		$this->compressor = $compressor;
 	}
 
 	/**
@@ -58,85 +71,70 @@ class AssetsLoader
 	{
 		foreach (array (self::TYPE_CSS, self::TYPE_JS) as $type)
 		{
-			$dest = sprintf('%s/%s/%s.%s', $this->targetPath, $type, $name, '%s');
+			$sd = new SourceDefinition\Module($this->sourcePath, $type, $name);
+			$sd->setLessParser($this->lessParser);
 
-			$source = $this->getAsset($type, $name, false);
+			$this->buildPlatformAsset($sd, $type, $compress);
+		}
+	}
+
+	public function loadFiles($files, $type, $compress = false)
+	{
+		$sd = new SourceDefinition\Files($this->sourcePath, $type, $files);
+		$sd->setLessParser($this->lessParser);
+
+		$this->buildPlatformAsset($sd, $type, $compress);
+	}
+
+	/**
+	 * @param SourceDefinition $sd
+	 * @param string           $type
+	 * @param bool             $compress
+	 */
+	protected function buildPlatformAsset(SourceDefinition $sd, $type, $compress)
+	{
+		$destinationPath = $this->getAssetPathMask($type, $sd->getName());
+		$targetPathNormal = sprintf($destinationPath, $type);
+		$targetPathCompressed = sprintf($destinationPath, 'min.' . $type);
+
+		$targetContents = file_exists($targetPathNormal) ? file_get_contents($targetPathNormal) : null;
+
+		// only in dev environment:
+		if (!$compress)
+		{
+			$source = $sd->getCompiledSource();
 			if ("" === $source)
 			{
-				return ;
+				return;
 			}
-
-			$targetPathNormal = sprintf($dest, $type);
-			$targetPathCompressed = sprintf($dest, 'min.'. $type);
-			$targetContents = file_exists($targetPathNormal) ? file_get_contents($targetPathNormal) : null;
 
 			if ($targetContents !== $source)
 			{
 				// regenerate both files!
 				file_put_contents($targetPathNormal, $source);
 
-				$sourceMin = $this->getAsset($type, $name, true);
+				$sourceMin = $this->compressor ? $this->compressor->compress($source, $type) : $source;
 				file_put_contents($targetPathCompressed, $sourceMin);
+				$targetContents = $source;
 			}
-
-			if ($compress)
+		}
+		else
+		{
+			// or on prod, if there is nothing to load:
+			if ("" === (string) $targetContents)
 			{
-				$targetPathNormal = $targetPathCompressed;
+				return;
 			}
-
-			{
-				$this->assets->push(sprintf('/%s/%s?%s', $type, basename($targetPathNormal), substr(md5($source), 0, 10)), $type);
-			}
+			$targetPathNormal = $targetPathCompressed;
 		}
+
+		$hash = substr(md5($targetContents), 0, 10);
+		$this->assets->push(sprintf('/%s/%s?%s', $type, basename($targetPathNormal), $hash), $type);
 	}
 
-	protected function getAsset($type, $name, $compress = false)
+	protected function getAssetPathMask($type, $name)
 	{
-		if (self::TYPE_CSS !== $type && self::TYPE_JS !== $type)
-		{
-			throw new InvalidArgumentException('Invalid asset type: ' . $type);
-		}
-
-		$files = $this->getModuleFiles($type, $name);
-		$contents = $this->getFileContents($files, self::TYPE_CSS === $type ? "\n" : ";");
-
-		if ($compress && 0 !== strlen($contents))
-		{
-			$contents = $this->compressor->compress($contents, $type);
-		}
-		return $contents;
+		return sprintf('%s/%s/%s.%s', $this->targetPath, $type, $name, '%s');
 	}
 
-	protected function getModuleFiles($type, $name)
-	{
-		$path = sprintf('%s/%s/%s', $this->sourcePath, $type, $name);
-		if (false === is_dir($path))
-		{
-			return array ();
-		}
-
-		$result = array();
-		$dir = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path));
-		foreach ($dir as $file)
-		{
-			if ("." . $type !== substr($file, -strlen("." . $type)))
-			{
-				continue;
-			}
-			$result[] = (string) $file;
-
-		}
-		sort($result);
-		return $result;
-	}
-
-	protected function getFileContents(array $files, $delimiter = "")
-	{
-		$source = array ();
-		foreach ($files as $path)
-		{
-			$source[] = file_get_contents($path);
-		}
-		return implode($delimiter, $source);
-	}
 }
