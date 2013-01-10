@@ -41,6 +41,8 @@ class AssetsLoader
 	 */
 	protected $lessParser;
 
+	public $isLastAssetRegenerated = false;
+
 	/**
 	 * @param string $sourcePath
 	 * @param string $targetPath
@@ -108,7 +110,8 @@ class AssetsLoader
 				return;
 			}
 
-			if ($targetContents !== $source)
+			$this->isLastAssetRegenerated = $targetContents !== $source;
+			if ($this->isLastAssetRegenerated)
 			{
 				// regenerate both files!
 				file_put_contents($targetPathNormal, $source);

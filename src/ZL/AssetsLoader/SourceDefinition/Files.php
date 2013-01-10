@@ -16,7 +16,9 @@ class Files extends SourceDefinition
 
 	public function getName()
 	{
-		return implode('-', $this->definition);
+		return implode('-', array_map(function ($file) {
+			return str_replace(array ('-vk.css', '-vk.js'), '', pathinfo($file, PATHINFO_BASENAME));
+		}, $this->definition));
 	}
 
 }

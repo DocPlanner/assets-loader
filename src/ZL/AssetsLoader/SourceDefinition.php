@@ -117,7 +117,10 @@ abstract class SourceDefinition
 
 		foreach ($files as $path)
 		{
-			$source[] = file_get_contents($path);
+			if (file_exists($path) && is_readable($path))
+			{
+				$source[] = file_get_contents($path);
+			}
 		}
 
 		return implode($this->getDelimiter(), $source);
