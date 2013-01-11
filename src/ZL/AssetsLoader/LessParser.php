@@ -35,7 +35,25 @@ class LessParser
 		}
 
 		$output = sprintf('%s/%s-%s', $this->cachePath, basename(dirname($filePath)), basename($filePath, 'less') . 'css');
-		$this->lessc->checkedCompile($filePath, $output);
+		$cache = $output . '.cache';
+		if (file_exists($cache))
+		{
+			$root = json_decode(file_get_contents($cache), true);
+		}
+		else
+		{
+			$root = $filePath;
+		}
+
+//		$this->lessc->checkedCompile($filePath, $output);
+
+		$root = $this->lessc->cachedCompile($root);
+		if (isset($root['compiled']))
+		{
+			file_put_contents($output, $root['compiled']);
+			unset($root['compiled']);
+			file_put_contents($cache, json_encode($root));
+		}
 		return $output;
 	}
 
