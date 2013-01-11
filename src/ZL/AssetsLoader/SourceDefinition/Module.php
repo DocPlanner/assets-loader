@@ -5,10 +5,9 @@
  */
 
 namespace ZL\AssetsLoader\SourceDefinition;
-use ZL\AssetsLoader\SourceDefinition;
-use ZL\AssetsLoader\AssetsLoader;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
+use \ZL\AssetsLoader\SourceDefinition;
+use \ZL\AssetsLoader\AssetsLoader;
+use \DirectoryIterator;
 
 
 
@@ -23,7 +22,7 @@ class Module extends SourceDefinition
 		}
 
 		$result = array ();
-		$dir = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path));
+		$dir = new DirectoryIterator($path);
 		foreach ($dir as $file)
 		{
 			$file = (string) $file;
@@ -34,7 +33,7 @@ class Module extends SourceDefinition
 				continue;
 			}
 
-			$result[] = $file;
+			$result[] = rtrim($path, '/') . '/' . $file;
 		}
 		sort($result);
 		return $result;
