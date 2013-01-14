@@ -113,11 +113,20 @@ class AssetsLoader
 			$this->isLastAssetRegenerated = $targetContents !== $source;
 			if ($this->isLastAssetRegenerated)
 			{
-				// regenerate both files!
-				file_put_contents($targetPathNormal, $source);
 
 				$sourceMin = $this->compressor ? $this->compressor->compress($source, $type) : $source;
-				file_put_contents($targetPathCompressed, $sourceMin);
+				if ($this->compressor && $this->compressor->errors)
+				{
+					file_put_contents($targetPathNormal, $this->compressor->errors . "\n" . $source);
+					file_put_contents($targetPathCompressed, $source);
+				}
+				else
+				{
+					// regenerate both files!
+					file_put_contents($targetPathNormal, $source);
+					file_put_contents($targetPathCompressed, $sourceMin);
+				}
+
 				$targetContents = $source;
 			}
 		}

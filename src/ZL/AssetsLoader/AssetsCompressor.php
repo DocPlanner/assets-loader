@@ -9,6 +9,7 @@ namespace ZL\AssetsLoader;
 class AssetsCompressor
 {
 	protected $yuiPath;
+	public $errors;
 
 	public function __construct($yuiPath = null)
 	{
@@ -35,8 +36,52 @@ class AssetsCompressor
 		fwrite($pipes[0], $source);
 		fclose($pipes[0]);
 
-		$compressed = stream_get_contents($pipes[1]);
-		fclose($pipes[1]);
+		$output = array (
+			"stdout" => "",
+			"stderr" => "",
+		);
+
+		$readSockets = array (
+			"stdout" => $pipes[1],
+			"stderr" => $pipes[2]
+		);
+		$empty = array ();
+		while (false !== stream_select($readSockets, $empty, $empty, 1))
+		{
+			foreach ($readSockets as $key => $stream)
+			{
+				$output[$key] .= stream_get_contents($stream);
+			}
+
+			$readSockets = array (
+				"stdout" => $pipes[1],
+				"stderr" => $pipes[2]
+			);
+
+			$eof = true;
+			foreach ($readSockets as $stream)
+			{
+				$eof &= feof($stream);
+			}
+
+			if ($eof)
+			{
+				break;
+			}
+		}
+
+		$compressed = $output['stdout'];
+		$errors = $output['stderr'];
+		$this->errors = "" !== $errors;
+
+		if ($this->errors)
+		{
+			$compressed = "";
+			$this->errors = sprintf(
+				"alert('compression errors, check your source and console for details'); console.error(%s); ",
+				json_encode($errors)
+			);
+		}
 
 		proc_close($process);
 		return $compressed;
