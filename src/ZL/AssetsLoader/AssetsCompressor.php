@@ -48,9 +48,9 @@ class AssetsCompressor
 		$empty = array ();
 		while (false !== stream_select($readSockets, $empty, $empty, 1))
 		{
-			foreach ($readSockets as $key => $stream)
+			foreach ($readSockets as $stream)
 			{
-				$output[$key] .= stream_get_contents($stream);
+				$output[$stream == $pipes[1] ? "stdout" : "stderr"] .= stream_get_contents($stream);
 			}
 
 			$readSockets = array (
