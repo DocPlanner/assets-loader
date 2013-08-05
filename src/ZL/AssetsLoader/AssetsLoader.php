@@ -114,6 +114,11 @@ class AssetsLoader
 
 		$targetContents = file_exists($targetPathNormal) ? file_get_contents($targetPathNormal) : null;
 
+		if ($targetContents)
+		{
+			$targetContents = $this->modifyFile($targetContents, $targetPathNormal);
+		}
+
 		// only in dev environment:
 		if (!$compress)
 		{
@@ -126,7 +131,7 @@ class AssetsLoader
 			$this->isLastAssetRegenerated = $targetContents !== $source;
 			if ($this->isLastAssetRegenerated)
 			{
-
+				$this->modifyFile($source, $targetPathCompressed);
 				$sourceMin = $this->compressor ? $this->compressor->compress($source, $type) : $source;
 				if ($this->compressor && $this->compressor->errors)
 				{
@@ -153,14 +158,6 @@ class AssetsLoader
 			$targetPathNormal = $targetPathCompressed;
 		}
 
-		if ($targetContents)
-		{
-			foreach ($this->modifiers as $modifier)
-			{
-				$targetContents = $modifier->modify($targetContents);
-			}
-		}
-
 		$hash = substr(md5($targetContents), 0, 10);
 		$this->assets->push(sprintf('/%s/%s?%s', $type, basename($targetPathNormal), $hash), $type);
 	}
@@ -168,6 +165,23 @@ class AssetsLoader
 	protected function getAssetPathMask($type, $name)
 	{
 		return sprintf('%s/%s/%s.%s', $this->targetPath, $type, $name, '%s');
+	}
+
+	/**
+	 * @param $content
+	 * @param $path
+	 *
+	 * @return string
+	 */
+	protected function modifyFile($content, $path)
+	{
+		foreach ($this->modifiers as $modifier)
+		{
+			$content = $modifier->modify($content);
+		}
+
+		file_put_contents($path, $content);
+		return $content;
 	}
 
 }
