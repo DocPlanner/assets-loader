@@ -131,7 +131,7 @@ class AssetsLoader
 			$this->isLastAssetRegenerated = $targetContents !== $source;
 			if ($this->isLastAssetRegenerated)
 			{
-				$this->modifyFile($source, $targetPathCompressed);
+				$source = $this->modifyFile($source, $targetPathCompressed);
 				$sourceMin = $this->compressor ? $this->compressor->compress($source, $type) : $source;
 				if ($this->compressor && $this->compressor->errors)
 				{
