@@ -37,6 +37,11 @@ class AssetsLoader
 	protected $compressor;
 
 	/**
+	 * @var ModifierInterface[]
+	 */
+	protected $modifiers = [];
+
+	/**
 	 * @var LessParser
 	 */
 	protected $lessParser;
@@ -63,6 +68,14 @@ class AssetsLoader
 	public function setCompressor(AssetsCompressor $compressor)
 	{
 		$this->compressor = $compressor;
+	}
+
+	/**
+	 * @param ModifierInterface $modifier
+	 */
+	public function setModifier(ModifierInterface $modifier)
+	{
+		$this->modifiers[] = $modifier;
 	}
 
 	/**
@@ -138,6 +151,14 @@ class AssetsLoader
 				return;
 			}
 			$targetPathNormal = $targetPathCompressed;
+		}
+
+		if ($targetContents)
+		{
+			foreach ($this->modifiers as $modifier)
+			{
+				$targetContents = $modifier->modify($targetContents);
+			}
 		}
 
 		$hash = substr(md5($targetContents), 0, 10);
