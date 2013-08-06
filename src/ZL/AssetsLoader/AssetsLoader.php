@@ -114,11 +114,6 @@ class AssetsLoader
 
 		$targetContents = file_exists($targetPathNormal) ? file_get_contents($targetPathNormal) : null;
 
-		if ($targetContents)
-		{
-			$targetContents = $this->modifyFile($targetContents, $targetPathNormal);
-		}
-
 		// only in dev environment:
 		if (!$compress)
 		{
@@ -128,10 +123,10 @@ class AssetsLoader
 				return;
 			}
 
+			$source = $this->modifyFile($source, $targetPathCompressed);
 			$this->isLastAssetRegenerated = $targetContents !== $source;
 			if ($this->isLastAssetRegenerated)
 			{
-				$source = $this->modifyFile($source, $targetPathCompressed);
 				$sourceMin = $this->compressor ? $this->compressor->compress($source, $type) : $source;
 				if ($this->compressor && $this->compressor->errors)
 				{
