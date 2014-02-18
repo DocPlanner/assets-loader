@@ -4,20 +4,22 @@
  * Date: 2013-09-01 12:53
  */
 
-namespace ZL\AssetsLoader;
+namespace ZL\AssetsLoader\FileProcessor;
 
-class LessParser
+use ZL\AssetsLoader\Structure\File;
+
+class LessParserProcessor implements FileProcessorInterface
 {
 	protected $cachePath;
 	protected $lessc;
 
-	public function __construct($cachePath)
+	public function __construct(\lessc $lessc, $cachePath)
 	{
-		$this->lessc = new \lessc;
+		$this->lessc = $lessc;
 		$this->setCachePath($cachePath);
 	}
 
-	public function setCachePath($cachePath)
+	private function setCachePath($cachePath)
 	{
 		if (false === is_dir($cachePath))
 		{
@@ -26,15 +28,10 @@ class LessParser
 		$this->cachePath = realpath($cachePath);
 	}
 
-	public function compile($filePath)
+	public function processAsset(File $file, $type)
 	{
-		$ext = pathinfo($filePath, PATHINFO_EXTENSION);
-		if ('less' !== $ext)
-		{
-			return $filePath;
-		}
-
-		$output = sprintf('%s/%s-%s', $this->cachePath, basename(dirname($filePath)), basename($filePath, 'less') . 'css');
+		$path = $file->getFilePath();
+		$output = sprintf('%s/%s-%s', $this->cachePath, basename(dirname($path)), basename($path, 'less') . 'css');
 		$cache = $output . '.cache';
 		if (file_exists($cache))
 		{
@@ -42,10 +39,8 @@ class LessParser
 		}
 		else
 		{
-			$root = $filePath;
+			$root = $path;
 		}
-
-//		$this->lessc->checkedCompile($filePath, $output);
 
 		$root = $this->lessc->cachedCompile($root);
 		if (isset($root['compiled']))
@@ -54,7 +49,14 @@ class LessParser
 			unset($root['compiled']);
 			file_put_contents($cache, json_encode($root));
 		}
-		return $output;
+
+		return [
+			new File($output, $file->getType())
+		];
 	}
 
+	public function isHandling(File $file, $mode)
+	{
+		return $file->isStylesheet() && $file->isLess();
+	}
 }

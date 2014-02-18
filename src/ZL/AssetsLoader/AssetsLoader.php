@@ -7,6 +7,9 @@ namespace ZL\AssetsLoader;
 
 use InvalidArgumentException, RuntimeException;
 use RecursiveDirectoryIterator, RecursiveIteratorIterator;
+use ZL\AssetsLoader\Builder\Builder;
+use ZL\AssetsLoader\FileProcessor\FileProcessorInterface;
+use ZL\AssetsLoader\SourceProcessor\SourceProcessorInterface;
 
 /**
  * Assets Loader loads a pack of css/js files from one directory, mangles them, combines,
@@ -17,136 +20,81 @@ class AssetsLoader
 	const TYPE_JS = 'js';
 	const TYPE_CSS = 'css';
 
-	/**
-	 * @var AssetsDefinition
-	 */
-	public $assets;
+	const MODE_MODULE = 'module';
+	const MODE_MAIN = 'main';
 
 	/**
-	 * @var string Assets will be loaded from this path
+	 * @var Builder[]
 	 */
-	protected $sourcePath;
-	/**
-	 * @var string Compiled assets will be saved here
-	 */
-	protected $targetPath;
+	private $builders;
+	private $targetPath;
+	private $staticHostPath;
 
-	/**
-	 * @var AssetsCompressor
-	 */
-	protected $compressor;
-
-	/**
-	 * @var LessParser
-	 */
-	protected $lessParser;
-
-	public $isLastAssetRegenerated = false;
-
-	/**
-	 * @param string $sourcePath
-	 * @param string $targetPath
-	 * @param string $cachePath
-	 * @param string $staticHost
-	 */
-	public function __construct($sourcePath, $targetPath, $cachePath = null, $staticHost = null)
+	public function __construct($targetPath, $staticHostPath)
 	{
-		$this->sourcePath = realpath($sourcePath);
-		$this->targetPath = realpath($targetPath);
-		$this->assets = new AssetsDefinition($staticHost);
-		if ($cachePath)
-		{
-			$this->lessParser = new LessParser($cachePath);
-		}
+		$this->targetPath = $targetPath;
+		$this->staticHostPath = $staticHostPath;
 	}
 
-	public function setCompressor(AssetsCompressor $compressor)
+	/**
+	 * @param string  $path
+	 * @param Builder $builder
+	 */
+	public function addBuilder($path, Builder $builder)
 	{
-		$this->compressor = $compressor;
+		$this->builders[$path] = $builder;
 	}
 
 	/**
 	 * @param string $name
-	 * @param bool   $compress
+	 *
+	 * @throws \RuntimeException
 	 */
-	public function loadModule($name, $compress = false)
+	public function buildAssets($name)
 	{
-		foreach (array (self::TYPE_CSS, self::TYPE_JS) as $type)
+		foreach ($this->builders as $path => $builder)
 		{
-			$sd = new SourceDefinition\Module($this->sourcePath, $type, $name);
-			$sd->setLessParser($this->lessParser);
+			if (!realpath($path))
+			{
+				throw new RuntimeException('Cannot find source path: ' . $path);
+			}
+			$path = sprintf('%s/%s', $path, $name);
 
-			$this->buildPlatformAsset($sd, $type, $compress);
+			$target = sprintf('%s/%s/%s', $this->targetPath, $builder->getType(), $name);
+			if (false === is_dir(dirname($target)))
+			{
+				mkdir(dirname($target), 0755, true);
+			}
+
+			foreach ($builder->buildLayout($path, $target) as $filePath => $fileContents)
+			{
+				file_put_contents($filePath, $fileContents);
+			}
 		}
 	}
 
-	public function loadFiles($files, $type, $compress = false)
+	public function getPathsToAssets()
 	{
-		$sd = new SourceDefinition\Files($this->sourcePath, $type, $files);
-		$sd->setLessParser($this->lessParser);
-
-		$this->buildPlatformAsset($sd, $type, $compress);
-	}
-
-	/**
-	 * @param SourceDefinition $sd
-	 * @param string           $type
-	 * @param bool             $compress
-	 */
-	protected function buildPlatformAsset(SourceDefinition $sd, $type, $compress)
-	{
-		$destinationPath = $this->getAssetPathMask($type, $sd->getName());
-		$targetPathNormal = sprintf($destinationPath, $type);
-		$targetPathCompressed = sprintf($destinationPath, 'min.' . $type);
-
-		$targetContents = file_exists($targetPathNormal) ? file_get_contents($targetPathNormal) : null;
-
-		// only in dev environment:
-		if (!$compress)
+		$files = [];
+		$iterator = new RecursiveIteratorIterator(new \RecursiveDirectoryIterator($this->targetPath));
+		/** @var \SplFileinfo $file */
+		foreach ($iterator as $file)
 		{
-			$source = $sd->getCompiledSource();
-			if ("" === $source)
+			if (false === $file->isDir() && "." !== substr($file->getFilename(), 0, 1))
 			{
-				return;
-			}
-
-			$this->isLastAssetRegenerated = $targetContents !== $source;
-			if ($this->isLastAssetRegenerated)
-			{
-
-				$sourceMin = $this->compressor ? $this->compressor->compress($source, $type) : $source;
-				if ($this->compressor && $this->compressor->errors)
-				{
-					file_put_contents($targetPathNormal, $this->compressor->errors . "\n" . $source);
-					file_put_contents($targetPathCompressed, $source);
-				}
-				else
-				{
-					// regenerate both files!
-					file_put_contents($targetPathNormal, $source);
-					file_put_contents($targetPathCompressed, $sourceMin);
-				}
-
-				$targetContents = $source;
+				$files[] = $file->getPathname();
 			}
 		}
-		else
-		{
-			// or on prod, if there is nothing to load:
-			if ("" === (string) $targetContents)
-			{
-				return;
-			}
-			$targetPathNormal = $targetPathCompressed;
-		}
-
-		$hash = substr(md5($targetContents), 0, 10);
-		$this->assets->push(sprintf('/%s/%s?%s', $type, basename($targetPathNormal), $hash), $type);
+		return $files;
 	}
 
-	protected function getAssetPathMask($type, $name)
+	public function getPublicLinksToAssets()
 	{
-		return sprintf('%s/%s/%s.%s', $this->targetPath, $type, $name, '%s');
+		return array_filter(array_map(function ($path)
+		{
+			return $this->staticHostPath . substr($path, strlen($this->targetPath)) . '?' . crc32(file_get_contents($path));
+		},
+		$this->getPathsToAssets()));
 	}
 
 }

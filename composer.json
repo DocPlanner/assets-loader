@@ -1,20 +1,27 @@
 {
-    "name": "znanylekarz/assets-loader",
-    "description": "Assets Loader",
-    "authors": [
-        {
-            "name": "Maciej Łebkowski",
-            "email": "m.lebkowski@gmail.com"
-        }
-    ],
-    "require": {
-        "nervo/yuicompressor": "2.4.*",
-        "leafo/lessphp": "0.3.8"
+	"name": "znanylekarz/assets-loader",
+	"description": "Assets Loader",
+	"authors": [
+		{
+			"name": "Maciej Łebkowski",
+			"email": "m.lebkowski@gmail.com"
+		}
+	],
+	"require": {
+		"leafo/lessphp": "0.3.8",
+		"tedivm/jshrink": "~0.5"
+	},
+	"require-dev": {
+		"phpunit/phpunit": "~3.0",
+		"mikey179/vfsStream": "~1.0"
 
-    },
-    "autoload": {
-        "psr-0": {
-            "ZL\\AssetsLoader": "src/"
-        }
-    }
+	},
+	"autoload": {
+		"psr-0": {
+			"ZL\\AssetsLoader": "src/"
+		},
+		"psr-4": {
+			"ZL\\AssetsLoader\\": "tests/"
+		}
+	}
 }
