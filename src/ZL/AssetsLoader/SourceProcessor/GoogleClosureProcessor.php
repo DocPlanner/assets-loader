@@ -58,9 +58,8 @@ class GoogleClosureProcessor implements SourceProcessorInterface
 		curl_setopt($ch, CURLOPT_POST, true);
 
 		curl_setopt($ch, CURLOPT_POSTFIELDS,
-			'output_format=json' . '&output_info=compiled_code' . '&output_info=warnings'
-			. '&output_info=errors' . '&output_info=statistics' . '&compilation_level=ADVANCED_OPTIMIZATIONS'
-			. '&warning_level=verbose' . '&js_code=' . urlencode($source)
+			'output_format=json' . '&output_info=compiled_code' . '&output_info=errors'
+			. '&compilation_level=ADVANCED_OPTIMIZATIONS' . '&js_code=' . urlencode($source)
 		);
 		curl_setopt($ch, CURLOPT_URL, 'http://closure-compiler.appspot.com/compile');
 
@@ -69,7 +68,11 @@ class GoogleClosureProcessor implements SourceProcessorInterface
 		$response = json_decode($response, true);
 		if (array_key_exists('errors', $response))
 		{
-			throw new \RuntimeException;
+			$message = implode("\n", array_map(function ($error)
+			{
+				return $error['error'];
+			}, $response['errors']));
+			throw new \RuntimeException($message);
 		}
 
 		return $response['compiledCode'];
