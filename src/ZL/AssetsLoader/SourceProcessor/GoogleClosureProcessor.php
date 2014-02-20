@@ -1,7 +1,7 @@
 <?php
 
 
-namespace ZL\AssetsLoader\Processor;
+namespace ZL\AssetsLoader\SourceProcessor;
 
 use ZL\AssetsLoader\SourceProcessor\SourceProcessorInterface;
 use ZL\AssetsLoader\Structure\Source;
