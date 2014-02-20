@@ -9,6 +9,11 @@ class DirectoryIndexer implements IndexerInterface
 	public function indexDirectory($directory)
 	{
 		$index = new Index;
+		if (false === is_dir($directory))
+		{
+			return $index;
+		}
+
 		$iterator = new \DirectoryIterator($directory);
 		/** @var \SplFileInfo $file */
 		foreach ($iterator as $file)

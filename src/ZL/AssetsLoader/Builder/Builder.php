@@ -86,6 +86,11 @@ class Builder implements BuilderInterface
 		$result = [];
 		while (list ($name, $files) = each($variants))
 		{
+			if (0 === sizeof($files))
+			{
+				continue;
+			}
+
 			$filePath = $this->getPath($target, $name);
 			$content = $this->combineSources($files);
 			$file = $this->sourceFactory->createFile($filePath, $this->type);
