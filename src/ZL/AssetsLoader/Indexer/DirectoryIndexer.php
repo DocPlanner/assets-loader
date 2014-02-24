@@ -22,7 +22,7 @@ class DirectoryIndexer implements IndexerInterface
 			{
 				continue;
 			}
-			if (is_dir($file->isDir()))
+			if ($file->isDir())
 			{
 				$index->addSubModule($file->getFilename(), $this->indexDirectory($file->getPathname()));
 			}
