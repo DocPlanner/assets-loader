@@ -60,9 +60,15 @@ class Index
 
 	public function getFilePathsWithSubModules()
 	{
-		return call_user_func_array('array_merge', array_merge([$this->filePaths], array_map(function (Index $index)
+		$indexPath = $this->getIndexPath();
+		if ($indexPath)
 		{
-			return $index->getFilePathsWithSubModules();
+			return [$indexPath];
+		}
+		return call_user_func_array('array_merge', array_merge([$this->filePaths->getArrayCopy()], array_map(function (Index $index)
+		{
+			// two levels deep only:
+			return $index->getFilePaths()->getArrayCopy();
 		}, $this->getSubModules())));
 	}
 

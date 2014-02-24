@@ -71,13 +71,13 @@ class Builder implements BuilderInterface
 		$index = $this->indexer->indexDirectory($path);
 
 		$variants = [
-			$layoutName => $this->processFiles($index->getFilePaths()->getArrayCopy(), $this->type, AssetsLoader::MODE_MAIN),
+			$layoutName => $this->processFiles($index->getFilePathsWithSubModules(), $this->type, AssetsLoader::MODE_MAIN),
 		];
 
 		foreach ($index->getSubModules() as $name => $subModule)
 		{
 			$moduleFiles = $subModule->getFilePaths();
-			if (0 !== $moduleFiles->count())
+			if (0 !== $moduleFiles)
 			{
 				$variants[$layoutName . '-' . $name] = $this->processFiles($moduleFiles->getArrayCopy(), $this->type, AssetsLoader::MODE_MODULE);
 			}
