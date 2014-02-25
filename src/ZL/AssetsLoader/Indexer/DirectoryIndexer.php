@@ -6,7 +6,7 @@ namespace ZL\AssetsLoader\Indexer;
 
 class DirectoryIndexer implements IndexerInterface
 {
-	public function indexDirectory($directory)
+	public function indexDirectory($directory, $recursive = true)
 	{
 		$index = new Index;
 		if (false === is_dir($directory))
@@ -25,6 +25,10 @@ class DirectoryIndexer implements IndexerInterface
 			if ($file->isDir())
 			{
 				$index->addSubModule($file->getFilename(), $this->indexDirectory($file->getPathname()));
+				if ($recursive)
+				{
+					$index->addPath($file->getPathname());
+				}
 			}
 			else
 			{

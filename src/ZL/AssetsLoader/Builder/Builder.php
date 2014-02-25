@@ -71,7 +71,7 @@ class Builder implements BuilderInterface
 		$index = $this->indexer->indexDirectory($path);
 
 		$variants = [
-			$layoutName => $this->processFiles($index->getFilePathsWithSubModules(), $this->type, AssetsLoader::MODE_MAIN),
+			$layoutName => $this->processFiles($index->getFilePaths()->getArrayCopy(), $this->type, AssetsLoader::MODE_MAIN),
 		];
 
 		foreach ($index->getSubModules() as $name => $subModule)

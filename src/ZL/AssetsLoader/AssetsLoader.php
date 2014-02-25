@@ -5,11 +5,7 @@
  */
 namespace ZL\AssetsLoader;
 
-use InvalidArgumentException, RuntimeException;
-use RecursiveDirectoryIterator, RecursiveIteratorIterator;
 use ZL\AssetsLoader\Builder\Builder;
-use ZL\AssetsLoader\FileProcessor\FileProcessorInterface;
-use ZL\AssetsLoader\SourceProcessor\SourceProcessorInterface;
 
 /**
  * Assets Loader loads a pack of css/js files from one directory, mangles them, combines,
@@ -56,7 +52,7 @@ class AssetsLoader
 		{
 			if (!realpath($path))
 			{
-				throw new RuntimeException('Cannot find source path: ' . $path);
+				throw new \RuntimeException('Cannot find source path: ' . $path);
 			}
 			$path = sprintf('%s/%s', $path, $name);
 
@@ -76,13 +72,17 @@ class AssetsLoader
 	public function getPathsToAssets()
 	{
 		$files = [];
-		$iterator = new RecursiveIteratorIterator(new \RecursiveDirectoryIterator($this->targetPath));
-		/** @var \SplFileinfo $file */
-		foreach ($iterator as $file)
+		foreach ($this->builders as $builder)
 		{
-			if (false === $file->isDir() && "." !== substr($file->getFilename(), 0, 1))
+			$targetPath = $this->targetPath . '/' . $builder->getType();
+			$iterator = new \DirectoryIterator($targetPath);
+			/** @var \SplFileinfo $file */
+			foreach ($iterator as $file)
 			{
-				$files[] = $file->getPathname();
+				if (false === $file->isDir() && "." !== substr($file->getFilename(), 0, 1))
+				{
+					$files[] = $file->getPathname();
+				}
 			}
 		}
 		return $files;

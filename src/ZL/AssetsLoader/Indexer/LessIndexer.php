@@ -22,7 +22,7 @@ class LessIndexer extends DirectoryIndexer
 
 	public function indexDirectory($directory)
 	{
-		$directoryIndex = $this->directoryIndexer->indexDirectory($directory);
+		$directoryIndex = $this->directoryIndexer->indexDirectory($directory, false);
 
 		$indexFile = rtrim($directory, '/') . '/' . self::INDEX_NAME . '.'.self::LESS_EXTENSION;
 
