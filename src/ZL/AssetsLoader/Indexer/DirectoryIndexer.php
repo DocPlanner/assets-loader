@@ -24,10 +24,14 @@ class DirectoryIndexer implements IndexerInterface
 			}
 			if ($file->isDir())
 			{
-				$index->addSubModule($file->getFilename(), $this->indexDirectory($file->getPathname()));
+				$subModule = $this->indexDirectory($file->getPathname());
+				$index->addSubModule($file->getFilename(), $subModule);
 				if ($recursive)
 				{
-					$index->addPath($file->getPathname());
+					foreach ($subModule->getFilePaths() as $filePath)
+					{
+						$index->addPath($filePath);
+					}
 				}
 			}
 			else
