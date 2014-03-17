@@ -8,6 +8,13 @@ use ZL\AssetsLoader\Structure\Source;
 
 class GoogleClosureProcessor implements SourceProcessorInterface
 {
+	private $optimizationLevel;
+
+	public function __construct($useAdvanced = false)
+	{
+		$this->optimizationLevel = $useAdvanced ? 'ADVANCED_OPTIMIZATIONS' : 'SIMPLE_OPTIMIZATIONS';
+	}
+
 	/**
 	 * @param Source $source
 	 * @param string $mode
@@ -59,7 +66,7 @@ class GoogleClosureProcessor implements SourceProcessorInterface
 
 		curl_setopt($ch, CURLOPT_POSTFIELDS,
 			'output_format=json' . '&output_info=compiled_code' . '&output_info=errors'
-			. '&compilation_level=ADVANCED_OPTIMIZATIONS' . '&js_code=' . urlencode($source)
+			. '&compilation_level=' . $this->optimizationLevel . '&js_code=' . urlencode($source)
 		);
 		curl_setopt($ch, CURLOPT_URL, 'http://closure-compiler.appspot.com/compile');
 
