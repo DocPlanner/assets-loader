@@ -73,12 +73,23 @@ class GoogleClosureProcessor implements SourceProcessorInterface
 		$response = curl_exec($ch);
 
 		$response = json_decode($response, true);
+		$errors = null;
+
 		if (array_key_exists('errors', $response))
+		{
+			$errors = $response['errors'];
+		}
+		elseif (array_key_exists('serverErrors', $response))
+		{
+			$errors = $response['serverErrors'];
+		}
+
+		if ($errors)
 		{
 			$message = implode("\n", array_map(function ($error)
 			{
 				return $error['error'];
-			}, $response['errors']));
+			}, $errors));
 			throw new \RuntimeException($message);
 		}
 
