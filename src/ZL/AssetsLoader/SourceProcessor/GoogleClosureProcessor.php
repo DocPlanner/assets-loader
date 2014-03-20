@@ -3,16 +3,21 @@
 
 namespace ZL\AssetsLoader\SourceProcessor;
 
-use ZL\AssetsLoader\SourceProcessor\SourceProcessorInterface;
 use ZL\AssetsLoader\Structure\Source;
 
 class GoogleClosureProcessor implements SourceProcessorInterface
 {
 	private $optimizationLevel;
+	private $proxy;
 
 	public function __construct($useAdvanced = false)
 	{
 		$this->optimizationLevel = $useAdvanced ? 'ADVANCED_OPTIMIZATIONS' : 'SIMPLE_OPTIMIZATIONS';
+	}
+
+	public function setProxy($proxy)
+	{
+		$this->proxy = $proxy;
 	}
 
 	/**
@@ -63,6 +68,13 @@ class GoogleClosureProcessor implements SourceProcessorInterface
 		curl_setopt($ch, CURLOPT_ENCODING, '');
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_POST, true);
+		if ($this->proxy)
+		{
+			list ($proxyHost, $proxyPort) = explode(':', $this->proxy);
+			curl_setopt($ch, CURLOPT_PROXY, $proxyHost);
+			curl_setopt($ch, CURLOPT_PROXYPORT, $proxyPort);
+		}
+
 
 		curl_setopt($ch, CURLOPT_POSTFIELDS,
 			'output_format=json' . '&output_info=compiled_code' . '&output_info=errors'
