@@ -8,7 +8,7 @@
 		}
 	],
 	"require": {
-		"leafo/lessphp": "~0.4",
+		"leafo/lessphp": "0.3.9",
 		"tedivm/jshrink": "~0.5"
 	},
 	"require-dev": {
