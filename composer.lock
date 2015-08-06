@@ -1,23 +1,31 @@
 {
-    "hash": "6adec554dbbab1ade8642792c8f6c64c",
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "This file is @generated automatically"
+    ],
+    "hash": "bee87f76c97ccf0a918492835b7b2402",
     "packages": [
         {
             "name": "leafo/lessphp",
-            "version": "v0.3.8",
+            "version": "v0.5.0",
             "source": {
                 "type": "git",
-                "url": "http://github.com/leafo/lessphp",
-                "reference": "v0.3.8"
+                "url": "https://github.com/leafo/lessphp.git",
+                "reference": "0f5a7f5545d2bcf4e9fad9a228c8ad89cc9aa283"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://github.com/leafo/lessphp/zipball/v0.3.8",
-                "reference": "v0.3.8",
+                "url": "https://api.github.com/repos/leafo/lessphp/zipball/0f5a7f5545d2bcf4e9fad9a228c8ad89cc9aa283",
+                "reference": "0f5a7f5545d2bcf4e9fad9a228c8ad89cc9aa283",
                 "shasum": ""
             },
-            "time": "2012-08-18 19:16:09",
             "type": "library",
-            "installation-source": "dist",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "0.4.x-dev"
+                }
+            },
             "autoload": {
                 "classmap": [
                     "lessc.inc.php"
@@ -36,7 +44,8 @@
                 }
             ],
             "description": "lessphp is a compiler for LESS written in PHP.",
-            "homepage": "http://leafo.net/lessphp/"
+            "homepage": "http://leafo.net/lessphp/",
+            "time": "2014-11-24 18:39:20"
         },
         {
             "name": "nervo/yuicompressor",
@@ -44,17 +53,16 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/nervo/yuicompressor.git",
-                "reference": "2.4.7"
+                "reference": "57e188ab59b02bf5c57a5362c3c507ef62365f65"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://github.com/nervo/yuicompressor/zipball/2.4.7",
-                "reference": "2.4.7",
+                "url": "https://api.github.com/repos/nervo/yuicompressor/zipball/57e188ab59b02bf5c57a5362c3c507ef62365f65",
+                "reference": "57e188ab59b02bf5c57a5362c3c507ef62365f65",
                 "shasum": ""
             },
-            "time": "2012-05-12 01:31:30",
             "type": "library",
-            "installation-source": "dist",
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "BSD"
             ],
@@ -63,15 +71,15 @@
             "keywords": [
                 "java",
                 "yui"
-            ]
+            ],
+            "time": "2012-05-12 08:31:30"
         }
     ],
-    "packages-dev": null,
-    "aliases": [
-
-    ],
+    "packages-dev": [],
+    "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [
-
-    ]
+    "stability-flags": [],
+    "prefer-stable": false,
+    "platform": [],
+    "platform-dev": []
 }
